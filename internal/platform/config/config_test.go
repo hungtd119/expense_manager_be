@@ -12,7 +12,7 @@ func TestLoadValidateDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if cfg.Port != "3000" || cfg.StoreDriver != "sqlite" {
+	if cfg.Port != "3000" || cfg.StoreDriver != "mysql" {
 		t.Fatalf("unexpected defaults: %+v", cfg)
 	}
 }
@@ -45,4 +45,17 @@ func TestLoadRespectsEnv(t *testing.T) {
 		t.Fatalf("unexpected cfg: %+v", cfg)
 	}
 	_ = os.Remove("/tmp/test.sqlite")
+}
+
+func TestLoadRespectsMySQLEnv(t *testing.T) {
+	t.Setenv("PORT", "4000")
+	t.Setenv("STORE_DRIVER", "mysql")
+	t.Setenv("MYSQL_DSN", "user:pass@tcp(localhost:3306)/expense_test")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.StoreDriver != "mysql" || cfg.MySQLDSN != "user:pass@tcp(localhost:3306)/expense_test" {
+		t.Fatalf("unexpected cfg: %+v", cfg)
+	}
 }

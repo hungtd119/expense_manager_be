@@ -1,17 +1,35 @@
 services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: expense_manager
+      MYSQL_USER: expense
+      MYSQL_PASSWORD: expense
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uexpense -pexpense --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   backend:
     build:
       context: .
+    depends_on:
+      mysql:
+        condition: service_healthy
     environment:
       PORT: "3000"
-      STORE_DRIVER: sqlite
-      SQLITE_FILE: /app/data/go-app.sqlite
+      STORE_DRIVER: mysql
+      MYSQL_DSN: "expense:expense@tcp(mysql:3306)/expense_manager?charset=utf8mb4&parseTime=false&loc=Local"
       PUBLIC_DIR: /app/public
       CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000,http://127.0.0.1:3000
     ports:
       - "3000:3000"
-    volumes:
-      - backend-data:/app/data
 
 volumes:
-  backend-data:
+  mysql-data:

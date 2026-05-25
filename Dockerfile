@@ -17,8 +17,8 @@ RUN addgroup -S app && adduser -S app -G app && mkdir -p /app/data /app/public &
 COPY --from=builder /out/expense-manager /app/expense-manager
 
 ENV PORT=3000 \
-    STORE_DRIVER=sqlite \
-    SQLITE_FILE=/app/data/go-app.sqlite \
+    STORE_DRIVER=mysql \
+    MYSQL_DSN=expense:expense@tcp(mysql:3306)/expense_manager?charset=utf8mb4&parseTime=false&loc=Local \
     PUBLIC_DIR=/app/public
 
 EXPOSE 3000

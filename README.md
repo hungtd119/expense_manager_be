@@ -10,10 +10,22 @@ Tat ca lenh backend chay trong thu muc `backend/`:
 cd backend
 ```
 
-Chay backend Go voi SQLite mac dinh:
+Chay backend Go voi MySQL mac dinh:
 
 ```bash
 go run ./cmd/server
+```
+
+Mac dinh backend ket noi MySQL bang DSN:
+
+```text
+expense:expense@tcp(127.0.0.1:3306)/expense_manager?charset=utf8mb4&parseTime=false&loc=Local
+```
+
+Hoac chay ca backend va MySQL bang Docker Compose:
+
+```bash
+docker compose up --build
 ```
 
 Hoac dung Makefile:
@@ -28,10 +40,10 @@ Mo trinh duyet tai:
 http://localhost:3000
 ```
 
-Mac dinh app dung SQLite tai:
+Neu can chay SQLite legacy:
 
-```text
-data/go-app.sqlite
+```bash
+STORE_DRIVER=sqlite SQLITE_FILE=data/go-app.sqlite go run ./cmd/server
 ```
 
 Neu can chay JSON store fallback:
@@ -61,6 +73,7 @@ make test
 - `internal/domain/`: entity types va domain errors.
 - `internal/store/`: store contract va in-memory store cho tests.
 - `internal/adapter/store/sqlitestore/`: SQLite repository implementation.
+- `internal/adapter/store/mysqlstore/`: MySQL repository implementation.
 - `internal/adapter/store/jsonstore/`: JSON fallback implementation.
 - `migrations/001_init_sqlite.sql`: SQLite schema reference.
 - `../frontend/public/`: frontend static files duoc backend serve.

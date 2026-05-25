@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"expense-manager-mvp/internal/adapter/store/jsonstore"
+	"expense-manager-mvp/internal/adapter/store/mysqlstore"
 	"expense-manager-mvp/internal/adapter/store/sqlitestore"
 	"expense-manager-mvp/internal/platform/config"
 	"expense-manager-mvp/internal/store"
@@ -73,6 +74,8 @@ func newStore(cfg config.Config) (store.Store, error) {
 		return jsonstore.New(cfg.DataFile), nil
 	case "sqlite":
 		return sqlitestore.NewSQLiteStore(cfg.SQLiteFile, cfg.SQLiteImportJSON), nil
+	case "mysql":
+		return mysqlstore.NewMySQLStore(cfg.MySQLDSN, cfg.MySQLImportJSON), nil
 	default:
 		return nil, fmt.Errorf("storage driver khong ho tro: %s", cfg.StoreDriver)
 	}
