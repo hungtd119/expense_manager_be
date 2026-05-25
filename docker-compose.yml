@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: .
+    environment:
+      PORT: "3000"
+      STORE_DRIVER: sqlite
+      SQLITE_FILE: /app/data/go-app.sqlite
+      PUBLIC_DIR: /app/public
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000,http://127.0.0.1:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - backend-data:/app/data
+
+volumes:
+  backend-data:

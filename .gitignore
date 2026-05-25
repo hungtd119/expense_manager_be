@@ -1,0 +1,32 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Go artifacts
+bin/
+*.test
+*.prof
+coverage.out
+*.out
+
+# Local caches
+.cache/
+
+# Runtime data
+data/*.sqlite
+data/*.sqlite-*
+data/*.db
+data/*.db-*
+data/*.db.json
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/

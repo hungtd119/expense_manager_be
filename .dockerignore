@@ -1,0 +1,10 @@
+data/
+bin/
+.cache/
+coverage.out
+*.test
+*.prof
+*.log
+.env
+.env.*
+Dockerfile
