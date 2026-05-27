@@ -23,9 +23,6 @@ pipeline {
     CONTAINER_PORT = '3000'
     STORE_DRIVER = 'mysql'
     PUBLIC_DIR = '/app/public'
-    IMAGE_TAG = ''
-    DOCKER_IMAGE = ''
-    DOCKER_IMAGE_LATEST = ''
   }
 
   stages {
@@ -39,9 +36,6 @@ pipeline {
       steps {
         script {
           env.BACKEND_DIR = fileExists('backend/go.mod') ? 'backend' : '.'
-          env.IMAGE_TAG = env.BUILD_NUMBER
-          env.DOCKER_IMAGE = "${env.DOCKER_REGISTRY}/${env.DOCKER_REPOSITORY}:${env.IMAGE_TAG}"
-          env.DOCKER_IMAGE_LATEST = "${env.DOCKER_REGISTRY}/${env.DOCKER_REPOSITORY}:latest"
         }
       }
     }
@@ -64,9 +58,12 @@ pipeline {
       steps {
         dir(env.BACKEND_DIR) {
           sh '''
+            IMAGE="$DOCKER_REGISTRY/$DOCKER_REPOSITORY:$BUILD_NUMBER"
+            IMAGE_LATEST="$DOCKER_REGISTRY/$DOCKER_REPOSITORY:latest"
+
             docker build \
-              -t "$DOCKER_IMAGE" \
-              -t "$DOCKER_IMAGE_LATEST" \
+              -t "$IMAGE" \
+              -t "$IMAGE_LATEST" \
               .
           '''
         }
@@ -81,9 +78,12 @@ pipeline {
           passwordVariable: 'DOCKER_PASSWORD'
         )]) {
           sh '''
+            IMAGE="$DOCKER_REGISTRY/$DOCKER_REPOSITORY:$BUILD_NUMBER"
+            IMAGE_LATEST="$DOCKER_REGISTRY/$DOCKER_REPOSITORY:latest"
+
             echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY" -u "$DOCKER_USERNAME" --password-stdin
-            docker push "$DOCKER_IMAGE"
-            docker push "$DOCKER_IMAGE_LATEST"
+            docker push "$IMAGE"
+            docker push "$IMAGE_LATEST"
             docker logout "$DOCKER_REGISTRY"
           '''
         }
@@ -109,12 +109,14 @@ pipeline {
           )
         ]) {
           sh '''
+            IMAGE="$DOCKER_REGISTRY/$DOCKER_REPOSITORY:$BUILD_NUMBER"
+
             printf '%s' "$DOCKER_PASSWORD" | ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@$DEPLOY_HOST" "docker login '$DOCKER_REGISTRY' -u '$DOCKER_USERNAME' --password-stdin"
 
             ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@$DEPLOY_HOST" "
               set -e
               docker network inspect '$DOCKER_NETWORK' >/dev/null 2>&1 || docker network create '$DOCKER_NETWORK'
-              docker pull '$DOCKER_IMAGE'
+              docker pull '$IMAGE'
               docker stop '$CONTAINER_NAME' || true
               docker rm '$CONTAINER_NAME' || true
               docker run -d \
@@ -126,7 +128,7 @@ pipeline {
                 -e STORE_DRIVER='$STORE_DRIVER' \
                 -e MYSQL_DSN='$MYSQL_DSN' \
                 -e PUBLIC_DIR='$PUBLIC_DIR' \
-                '$DOCKER_IMAGE'
+                '$IMAGE'
               docker image prune -f
               docker logout '$DOCKER_REGISTRY'
             "
