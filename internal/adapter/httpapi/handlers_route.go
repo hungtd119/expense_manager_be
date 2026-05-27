@@ -20,7 +20,7 @@ func (s *server) Categories(w http.ResponseWriter, r *http.Request, db DB, reque
 	if !ok {
 		return
 	}
-	categories := usecase.NewReferenceService().CategoriesForUser(&db, user.ID)
+	categories := usecase.NewReferenceService(s.store).CategoriesForUser(&db, user.ID)
 	writeJSON(w, http.StatusOK, map[string]any{"categories": sanitizeCategories(categories), "requestId": requestID})
 }
 
@@ -29,6 +29,6 @@ func (s *server) Wallets(w http.ResponseWriter, r *http.Request, db DB, requestI
 	if !ok {
 		return
 	}
-	wallets := usecase.NewReferenceService().WalletsForUser(&db, user.ID)
+	wallets := usecase.NewReferenceService(s.store).WalletsForUser(&db, user.ID)
 	writeJSON(w, http.StatusOK, map[string]any{"wallets": sanitizeWallets(wallets), "requestId": requestID})
 }

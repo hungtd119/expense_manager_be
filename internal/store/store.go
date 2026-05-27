@@ -30,4 +30,10 @@ type Store interface {
 	CreateSession(domain.Session) error
 	DeleteSession(tokenHash string) error
 	DeleteExpiredSessions(now time.Time) (bool, error)
+	CreateWallet(domain.Wallet) error
+	UpdateWallet(domain.Wallet) error
+	DeleteWallet(userID string, id string) error
+	CreateCategory(domain.Category) error
+	UpdateCategory(domain.Category) error
+	DeleteCategory(userID string, id string) error
 }
