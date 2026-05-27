@@ -18,6 +18,7 @@ pipeline {
     MYSQL_DSN_CREDENTIALS_ID = 'backend-mysql-dsn'
     DEPLOY_HOST = '172.31.13.233'
     CONTAINER_NAME = 'expense-manager-backend'
+    LEGACY_CONTAINER_NAME = 'expense_manager_be-backend-1'
     DOCKER_NETWORK = 'expense_manager_be_default'
     HOST_PORT = '3000'
     CONTAINER_PORT = '3000'
@@ -119,6 +120,8 @@ pipeline {
               docker pull '$IMAGE'
               docker stop '$CONTAINER_NAME' || true
               docker rm '$CONTAINER_NAME' || true
+              docker stop '$LEGACY_CONTAINER_NAME' || true
+              docker rm '$LEGACY_CONTAINER_NAME' || true
               docker run -d \
                 --name '$CONTAINER_NAME' \
                 --restart unless-stopped \
