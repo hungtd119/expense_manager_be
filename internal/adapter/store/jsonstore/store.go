@@ -309,6 +309,129 @@ func (s *Store) DeleteExpiredSessions(now time.Time) (bool, error) {
 	return true, s.Write(db)
 }
 
+func (s *Store) CreateWallet(wallet domain.Wallet) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	db.Wallets = append(db.Wallets, wallet)
+	return s.Write(db)
+}
+
+func (s *Store) UpdateWallet(wallet domain.Wallet) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	for i, item := range db.Wallets {
+		if item.ID == wallet.ID && item.UserID == wallet.UserID {
+			db.Wallets[i] = wallet
+			return s.Write(db)
+		}
+	}
+	return domain.ErrNotFound
+}
+
+func (s *Store) DeleteWallet(userID string, id string) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	for _, tx := range db.Transactions {
+		if tx.WalletID == id && tx.DeletedAt == nil {
+			return errors.New("cannot delete wallet containing transactions")
+		}
+	}
+	for _, rt := range db.RecurringTransactions {
+		if rt.WalletID == id && rt.DeletedAt == nil {
+			return errors.New("cannot delete wallet linked to recurring transactions")
+		}
+	}
+	next := db.Wallets[:0]
+	found := false
+	for _, item := range db.Wallets {
+		if item.ID == id && item.UserID == userID {
+			found = true
+			continue
+		}
+		next = append(next, item)
+	}
+	if !found {
+		return domain.ErrNotFound
+	}
+	db.Wallets = next
+	return s.Write(db)
+}
+
+func (s *Store) CreateCategory(category domain.Category) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	db.Categories = append(db.Categories, category)
+	return s.Write(db)
+}
+
+func (s *Store) UpdateCategory(category domain.Category) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	for i, item := range db.Categories {
+		if item.ID == category.ID && item.UserID != nil && *item.UserID == *category.UserID {
+			db.Categories[i] = category
+			return s.Write(db)
+		}
+	}
+	return domain.ErrNotFound
+}
+
+func (s *Store) DeleteCategory(userID string, id string) error {
+	db, err := s.Read()
+	if err != nil {
+		return err
+	}
+	for _, item := range db.Categories {
+		if item.ID == id {
+			if item.UserID == nil {
+				return errors.New("cannot delete system default category")
+			}
+			if *item.UserID != userID {
+				return domain.ErrNotFound
+			}
+		}
+	}
+	for _, tx := range db.Transactions {
+		if tx.CategoryID == id && tx.DeletedAt == nil {
+			return errors.New("cannot delete category containing transactions")
+		}
+	}
+	for _, b := range db.Budgets {
+		if b.CategoryID == id && b.DeletedAt == nil {
+			return errors.New("cannot delete category containing budgets")
+		}
+	}
+	for _, rt := range db.RecurringTransactions {
+		if rt.CategoryID == id && rt.DeletedAt == nil {
+			return errors.New("cannot delete category linked to recurring transactions")
+		}
+	}
+	next := db.Categories[:0]
+	found := false
+	for _, item := range db.Categories {
+		if item.ID == id && item.UserID != nil && *item.UserID == userID {
+			found = true
+			continue
+		}
+		next = append(next, item)
+	}
+	if !found {
+		return domain.ErrNotFound
+	}
+	db.Categories = next
+	return s.Write(db)
+}
+
 func (s *Store) writeLocked(db domain.DB) error {
 	bytes, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {

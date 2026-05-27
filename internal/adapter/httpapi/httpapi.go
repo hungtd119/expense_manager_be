@@ -50,7 +50,13 @@ func NewHandler(store store.Store, cfg config.Config) http.Handler {
 		api.POST("/auth/logout", s.logout)
 		api.GET("/me", s.me)
 		api.GET("/categories", s.categories)
+		api.POST("/categories", s.createCategory)
+		api.PUT("/categories/:id", s.categoryByID)
+		api.DELETE("/categories/:id", s.categoryByID)
 		api.GET("/wallets", s.wallets)
+		api.POST("/wallets", s.createWallet)
+		api.PUT("/wallets/:id", s.walletByID)
+		api.DELETE("/wallets/:id", s.walletByID)
 		api.GET("/transactions", s.listTransactions)
 		api.POST("/transactions", s.createTransaction)
 		api.PUT("/transactions/:id", s.transactionByID)
@@ -131,8 +137,24 @@ func (s *server) categories(c *gin.Context) {
 	s.Categories(c.Writer, c.Request, db(c), requestID(c))
 }
 
+func (s *server) createCategory(c *gin.Context) {
+	s.CreateCategory(c.Writer, c.Request, db(c), requestID(c))
+}
+
+func (s *server) categoryByID(c *gin.Context) {
+	s.CategoryByID(c.Writer, c.Request, db(c), c.Param("id"), requestID(c))
+}
+
 func (s *server) wallets(c *gin.Context) {
 	s.Wallets(c.Writer, c.Request, db(c), requestID(c))
+}
+
+func (s *server) createWallet(c *gin.Context) {
+	s.CreateWallet(c.Writer, c.Request, db(c), requestID(c))
+}
+
+func (s *server) walletByID(c *gin.Context) {
+	s.WalletByID(c.Writer, c.Request, db(c), c.Param("id"), requestID(c))
 }
 
 func (s *server) listTransactions(c *gin.Context) {
