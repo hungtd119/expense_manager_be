@@ -16,7 +16,7 @@ pipeline {
     DOCKER_CREDENTIALS_ID = 'docker-registry-credentials'
     SSH_CREDENTIALS_ID = 'aws-ec2-ssh-key'
     MYSQL_DSN_CREDENTIALS_ID = 'backend-mysql-dsn'
-    DEPLOY_HOST = '13.212.161.182'
+    DEPLOY_HOST = '172.31.13.233'
     CONTAINER_NAME = 'expense-manager-backend'
     DOCKER_NETWORK = 'expense_manager_be_default'
     HOST_PORT = '3000'
