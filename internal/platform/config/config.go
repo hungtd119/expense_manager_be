@@ -42,7 +42,7 @@ func Load() (Config, error) {
 		PublicDir:             env("PUBLIC_DIR", filepath.Join("..", "frontend", "public")),
 		ShutdownTimeout:       durationEnv("SHUTDOWN_TIMEOUT", 10*time.Second),
 		ReadHeaderTimeout:     durationEnv("READ_HEADER_TIMEOUT", 5*time.Second),
-		CORSAllowedOrigins:    splitCSV(env("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")),
+		CORSAllowedOrigins:    splitCSV(env("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://localhost:5173,http://127.0.0.1:8081,http://127.0.0.1:5173,http://sweete.id.vn,https://sweete.id.vn,http://api.sweete.id.vn,https://api.sweete.id.vn")),
 		AuthRatePerMinute:     intEnv("AUTH_RATE_PER_MINUTE", 30),
 		AuthRateBurst:         intEnv("AUTH_RATE_BURST", 10),
 		PasswordMinLength:     intEnv("PASSWORD_MIN_LENGTH", 8),

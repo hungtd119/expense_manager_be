@@ -51,6 +51,36 @@ func TestAuthRegisterValidation(t *testing.T) {
 	}
 }
 
+func TestAuthLogin(t *testing.T) {
+	st := memstore.New()
+	if err := st.Ensure(); err != nil {
+		t.Fatalf("ensure: %v", err)
+	}
+	handler := NewHandler(st, config.TestDefaults())
+
+	email := "login-test@example.com"
+	register(t, handler, email)
+
+	// Test correct credentials
+	body := apiPost(t, handler, "/api/auth/login", "", map[string]any{
+		"email":    email,
+		"password": "password123",
+	})
+	token, _ := body["token"].(string)
+	if token == "" {
+		t.Fatalf("login missing token, body: %+v", body)
+	}
+
+	// Test incorrect credentials
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(`{"email":"`+email+`","password":"wrong-password"}`))
+	req.Header.Set("content-type", "application/json")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 on wrong password, got %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
 func TestAPISmokeFlow(t *testing.T) {
 	st := memstore.New()
 	if err := st.Ensure(); err != nil {
