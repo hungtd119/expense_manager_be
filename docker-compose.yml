@@ -27,7 +27,7 @@ services:
       STORE_DRIVER: mysql
       MYSQL_DSN: "expense:expense@tcp(mysql:3306)/expense_manager?charset=utf8mb4&parseTime=false&loc=Local"
       PUBLIC_DIR: /app/public
-      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://sweete.id.vn,https://sweete.id.vn,http://api.sweete.id.vn,https://api.sweete.id.vn
+      CORS_ORIGINS: "*"
     ports:
       - "3000:3000"
 
