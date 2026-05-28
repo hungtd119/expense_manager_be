@@ -59,6 +59,26 @@ func filterTransactions(items []map[string]any, r *http.Request) ([]map[string]a
 	categoryID := query.Get("categoryId")
 	walletID := query.Get("walletId")
 	q := strings.ToLower(strings.TrimSpace(query.Get("q")))
+
+	var minAmount, maxAmount float64
+	var hasMin, hasMax bool
+	if minStr := query.Get("minAmount"); minStr != "" {
+		val, err := strconv.ParseFloat(minStr, 64)
+		if err != nil {
+			return nil, nil, false
+		}
+		minAmount = val
+		hasMin = true
+	}
+	if maxStr := query.Get("maxAmount"); maxStr != "" {
+		val, err := strconv.ParseFloat(maxStr, 64)
+		if err != nil {
+			return nil, nil, false
+		}
+		maxAmount = val
+		hasMax = true
+	}
+
 	var result []map[string]any
 	for _, item := range items {
 		if typeValue != "" && item["type"] != typeValue {
@@ -76,9 +96,33 @@ func filterTransactions(items []map[string]any, r *http.Request) ([]map[string]a
 				continue
 			}
 		}
+		if amountVal, ok := item["amount"].(float64); ok {
+			if hasMin && amountVal < minAmount {
+				continue
+			}
+			if hasMax && amountVal > maxAmount {
+				continue
+			}
+		}
 		result = append(result, item)
 	}
-	return result, map[string]any{"type": nilOrString(typeValue), "categoryId": nilOrString(categoryID), "walletId": nilOrString(walletID), "q": nilOrString(q)}, true
+
+	filters := map[string]any{
+		"type":       nilOrString(typeValue),
+		"categoryId": nilOrString(categoryID),
+		"walletId":   nilOrString(walletID),
+		"q":          nilOrString(q),
+		"minAmount":  nil,
+		"maxAmount":  nil,
+	}
+	if hasMin {
+		filters["minAmount"] = minAmount
+	}
+	if hasMax {
+		filters["maxAmount"] = maxAmount
+	}
+
+	return result, filters, true
 }
 
 func parsePagination(r *http.Request) (int, int, bool) {

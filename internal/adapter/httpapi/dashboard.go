@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"time"
 )
 
-func dashboardSummary(db *DB, transactions []Transaction) map[string]any {
+func dashboardSummary(db *DB, transactions []Transaction, bounds MonthBounds) map[string]any {
 	incomeTotal := 0.0
 	expenseTotal := 0.0
 	expenseCount := 0
@@ -62,5 +63,57 @@ func dashboardSummary(db *DB, transactions []Transaction) map[string]any {
 			incomeCount++
 		}
 	}
-	return map[string]any{"totals": map[string]any{"income": incomeTotal, "expense": expenseTotal, "balance": balance, "savingsRate": savingsRate}, "counts": map[string]any{"all": len(transactions), "income": incomeCount, "expense": expenseCount}, "expenseByCategory": expenseByCategory, "topCategory": topCategory, "averageExpense": averageExpense, "insight": insight}
+
+	// Generate daily breakdown
+	var dailyBreakdown []map[string]any
+	start, err1 := time.Parse("2006-01-02", bounds.StartDate)
+	end, err2 := time.Parse("2006-01-02", bounds.EndDate)
+	if err1 == nil && err2 == nil {
+		type amountPair struct {
+			Income  float64
+			Expense float64
+		}
+		dailyAmounts := make(map[string]amountPair)
+		for _, tx := range transactions {
+			dateStr := tx.TransactionDate // YYYY-MM-DD
+			pair := dailyAmounts[dateStr]
+			if tx.Type == "income" {
+				pair.Income += tx.Amount
+			} else if tx.Type == "expense" {
+				pair.Expense += tx.Amount
+			}
+			dailyAmounts[dateStr] = pair
+		}
+
+		for d := start; d.Before(end); d = d.AddDate(0, 0, 1) {
+			dateStr := d.Format("2006-01-02")
+			pair := dailyAmounts[dateStr]
+			dailyBreakdown = append(dailyBreakdown, map[string]any{
+				"date":    dateStr,
+				"income":  pair.Income,
+				"expense": pair.Expense,
+			})
+		}
+	} else {
+		dailyBreakdown = []map[string]any{}
+	}
+
+	return map[string]any{
+		"totals": map[string]any{
+			"income":      incomeTotal,
+			"expense":     expenseTotal,
+			"balance":     balance,
+			"savingsRate": savingsRate,
+		},
+		"counts": map[string]any{
+			"all":     len(transactions),
+			"income":  incomeCount,
+			"expense": expenseCount,
+		},
+		"expenseByCategory": expenseByCategory,
+		"topCategory":       topCategory,
+		"averageExpense":    averageExpense,
+		"insight":           insight,
+		"dailyBreakdown":    dailyBreakdown,
+	}
 }

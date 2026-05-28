@@ -20,5 +20,5 @@ func (s *server) Dashboard(w http.ResponseWriter, r *http.Request, db DB, reques
 		writeError(w, http.StatusInternalServerError, "STORE_ERROR", "Khong doc duoc giao dich.", nil, requestID)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"month": r.URL.Query().Get("month"), "dashboard": dashboardSummary(&db, transactions), "requestId": requestID})
+	writeJSON(w, http.StatusOK, map[string]any{"month": r.URL.Query().Get("month"), "dashboard": dashboardSummary(&db, transactions, bounds), "requestId": requestID})
 }

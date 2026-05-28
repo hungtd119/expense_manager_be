@@ -58,6 +58,7 @@ func NewHandler(store store.Store, cfg config.Config) http.Handler {
 		api.PUT("/wallets/:id", s.walletByID)
 		api.DELETE("/wallets/:id", s.walletByID)
 		api.GET("/transactions", s.listTransactions)
+		api.GET("/export/transactions", s.exportTransactions)
 		api.POST("/transactions", s.createTransaction)
 		api.PUT("/transactions/:id", s.transactionByID)
 		api.DELETE("/transactions/:id", s.transactionByID)
